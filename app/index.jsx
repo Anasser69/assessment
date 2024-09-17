@@ -1,11 +1,13 @@
-import { StyleSheet, Text, View, FlatList, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { API_URL } from "@env";
+import { useNavigation } from '@react-navigation/native';
 
 const App = () => {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetch(API_URL + "posts")
@@ -41,7 +43,11 @@ const App = () => {
       <FlatList
         data={posts}
         keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => <Text style={styles.item}>{item.title}</Text>}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => navigation.navigate('second', { post: item })} style={styles.touchable}>
+            <Text style={styles.item}>{item.title}</Text>
+          </TouchableOpacity>
+        )}
       />
     </View>
   )
@@ -57,12 +63,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f8ff', 
   },
   item: {
-    padding: 10,
+    padding: 15,
     fontSize: 18,
-    height: 44,
+    height: 60,
     marginVertical: 8, 
     backgroundColor: '#e6e6fa', 
-    borderRadius: 5, 
+    borderRadius: 10, 
+    textAlign: 'center',
+    color: '#333',
+  },
+  touchable: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   error: {
     color: 'red',
