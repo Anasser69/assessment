@@ -1,34 +1,33 @@
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, TouchableOpacity, Button } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPostsStart, fetchPostsSuccess, fetchPostsFailure, toggleLanguage } from '../utils/store';
 import { API_URL } from "@env";
 import { useNavigation } from '@react-navigation/native';
 import i18n from '../utils/i18n';
 
 const App = () => {
-  const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [language, setLanguage] = useState(i18n.locale)
+  const dispatch = useDispatch();
+  const posts = useSelector(state => state.posts.data);
+  const loading = useSelector(state => state.posts.loading);
+  const error = useSelector(state => state.posts.error);
+  const language = useSelector(state => state.language);
   const navigation = useNavigation();
 
   useEffect(() => {
-    console.log(API_URL);
+    dispatch(fetchPostsStart());
     fetch(API_URL + "/posts")
       .then(response => response.json())
       .then(data => {
-        setPosts(data)
-        setLoading(false)
+        dispatch(fetchPostsSuccess(data));
       })
       .catch(error => {
-        setError(i18n.t('error'))
-        setLoading(false)
-      })
-  }, [])
+        dispatch(fetchPostsFailure(i18n.t('error')));
+      });
+  }, [dispatch]);
 
-  const toggleLanguage = () => {
-    const newLanguage = language === 'en' ? 'ar' : 'en';
-    setLanguage(newLanguage);
-    i18n.locale = newLanguage;
+  const handleToggleLanguage = () => {
+    dispatch(toggleLanguage());
   }
 
   if (loading) {
@@ -51,7 +50,7 @@ const App = () => {
   return (
     <View style={[styles.container, { direction: language === 'ar' ? 'rtl' : 'ltr' }]}>
       <Text style={styles.title}>{i18n.t('posts')}</Text>
-      <Button title={i18n.t('changeLanguage')} onPress={toggleLanguage} />
+      <Button title={i18n.t('changeLanguage')} onPress={handleToggleLanguage} />
       <FlatList
         data={posts}
         keyExtractor={item => item.id.toString()}
